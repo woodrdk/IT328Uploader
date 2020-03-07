@@ -1,3 +1,24 @@
+<?php
+/*
+* Rob Wood
+* 1/18/2020
+* This is a dating app website for class IT328
+* This file routes the users at the index to the home page using FatFree Framework
+*/
+
+// Turn on error reporting
+ini_set('display_errors', 1);
+error_reporting(E_ALL);
+//require_once ('vendor/autoload.php');
+require_once("config-member.php");
+
+//$db = new DatabaseFile();
+$dirName = 'uploads/';
+
+
+
+?>
+
 <!doctype html>
 <html>
 <head>
@@ -22,7 +43,9 @@
         <input type="file" name="fileToUpload" >
         <input type="submit" value="Upload File" name="submit">
         </form>
-
+        <?php
+            var_dump($_FILES);
+        ?>
     </div>
 </div>
 
