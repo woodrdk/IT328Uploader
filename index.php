@@ -1,21 +1,28 @@
 <?php
 /*
 * Rob Wood
-* 1/18/2020
-* This is a dating app website for class IT328
-* This file routes the users at the index to the home page using FatFree Framework
+* 3/8/2020
+* Uploading assignment
 */
 
 // Turn on error reporting
 ini_set('display_errors', 1);
 error_reporting(E_ALL);
-//require_once ('vendor/autoload.php');
 require_once("config-member.php");
 
-//$db = new DatabaseFile();
+function connect()
+{
+    try {
+        //echo "YES";
+        return new PDO(DB_DSN, DB_USERNAME, DB_PASSWORD);
+    } catch(PDOException $e) {
+        echo $e->getMessage();
+        return null;
+    }
+}
+
+$db = connect();
 $dirName = 'uploads/';
-
-
 
 ?>
 
@@ -44,7 +51,62 @@ $dirName = 'uploads/';
         <input type="submit" value="Upload File" name="submit">
         </form>
         <?php
-            var_dump($_FILES);
+        // var_dump($_FILES); // to test info output
+
+        if (isset($_FILES['fileToUpload'])) {
+            $file = $_FILES['fileToUpload'];
+
+            //Define valid file types
+            $validTypes = array('image/gif', 'image/jpeg', 'image/jpg', 'image/png');
+
+            //Check file size - 3 MB maximum
+            if ($_SERVER['CONTENT_LENGTH'] > 3000000) {
+                echo "<p class='error'>File is too large. Maximum file size is 3 MB.</p>";
+            }
+            //Check file type
+            else if (in_array($file['type'], $validTypes)) {
+
+                if ($file['error'] > 0){
+                    echo "<p class='error'>Return Code: {$file['error']}</p>";
+                }
+                //Check for duplicate file
+                if (file_exists($dirName . $file['name'])){
+                    echo "<p class='error'>Error uploading: ";
+                    echo $file['name'].' already exists.</p>';
+                }
+
+                else {
+                    move_uploaded_file($file['tmp_name'], $dirName . $file['name']);
+                    echo "<p class='success'>Uploaded {$file['name']} successfully!</p>";
+                    // store the file name in the database
+                    $sql = "INSERT INTO uploads(file_id, filename )
+                            VALUES (null, '{$file['name']}')";
+                    $db->exec($sql);
+                }
+            }
+            //Invalid file type
+            else {
+                echo "<p class='error'>Invalid file type. Allowed types: gif, jpg, png</p>";
+            }
+
+        }
+        ?>
+
+    </div>
+    <br>
+    <div class="image-div">
+        <?php
+            $dir = opendir($dirName);
+            //Get names of files
+            $sql = "SELECT * FROM uploads";
+            $result = $db->query($sql);
+            //Display images
+            if (sizeof($result) >= 1) {
+                foreach ($result as $row) {
+                    $img = $row['filename'];
+                    echo "<img src='$dirName$img' alt=''>";
+                }
+            }
         ?>
     </div>
 </div>
